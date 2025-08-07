@@ -1,0 +1,165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Vibrant Pink-Orange Brand Colors (Lovable style) */
+    --primary: 15 100% 65%; /* Bright Pink-Orange #FF5722 */
+    --primary-light: 25 100% 75%; /* Vibrant Light Orange #FF9800 */
+    --primary-foreground: 0 0% 100%;
+    
+    /* Background gradients */
+    --background: 0 0% 100%;
+    --background-secondary: 25 25% 98%;
+    --background-peach: 20 60% 96%;
+    --foreground: 222.2 84% 4.9%;
+
+    /* Card and glass effects */
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --glass: 0 0% 100% / 0.1;
+    --glass-border: 0 0% 100% / 0.2;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 15 100% 65%; /* Vibrant Pink-Orange */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 15 100% 65%; /* Vibrant Pink-Orange focus ring */
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    /* Deep space backgrounds with vibrant accents */
+    --background: 220 26% 6%; /* Deep navy #0F172A */
+    --background-dark: 220 25% 10%; /* Rich dark blue #1E293B */
+    --foreground: 0 0% 100%;
+
+    /* Enhanced dark card styles */
+    --card: 220 26% 6%;
+    --card-foreground: 0 0% 100%;
+    --card-dark: 220 23% 11%; /* #1F2937 with blue undertones */
+
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 100%;
+
+    /* Vibrant brand colors for dark mode */
+    --primary: 15 100% 65%; /* Vibrant Pink-Orange #FF5722 */
+    --primary-light: 25 100% 75%; /* Bright Orange #FF9800 */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 20% 15%; /* Rich dark gray */
+    --secondary-foreground: 0 0% 90%; /* Light text */
+
+    --muted: 220 23% 11%; /* Dark muted matching card */
+    --muted-foreground: 220 9% 65%; /* Soft blue-gray */
+
+    --accent: 270 100% 70%; /* Vibrant purple #A855F7 */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Enhanced borders and inputs */
+    --border: 220 23% 18%; /* Subtle border */
+    --input: 220 23% 11%; /* Dark input background */
+    --ring: 15 100% 65%; /* Vibrant Pink-Orange focus ring */
+
+    /* Glass effect for dark mode */
+    --glass-dark: 0 0% 100% / 0.08;
+    --glass-border-dark: 0 0% 100% / 0.1;
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  /* Glassmorphism utilities */
+  .glass {
+    @apply bg-white/10 backdrop-blur-md border border-white/20;
+  }
+  
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-lg border border-white/30 shadow-xl;
+  }
+  
+  /* Dark mode glass card */
+  .glass-card-dark {
+    background: hsl(var(--glass-dark));
+    @apply backdrop-blur-lg border border-white/10 shadow-2xl;
+  }
+  
+  /* Vibrant gradient utilities */
+  .gradient-orange {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-light)));
+  }
+  
+  .gradient-orange-hover {
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.95), hsl(var(--primary-light) / 0.95));
+  }
+  
+  /* Vibrant dark gradient backgrounds */
+  .gradient-background-dark {
+    background: linear-gradient(135deg, hsl(var(--background)), hsl(var(--background-dark)));
+  }
+  
+  .gradient-background {
+    background: linear-gradient(135deg, hsl(var(--background)), hsl(var(--background-peach)));
+  }
+  
+  /* Vibrant focus ring utilities */
+  .focus-ring-orange {
+    @apply focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:outline-none;
+  }
+}
