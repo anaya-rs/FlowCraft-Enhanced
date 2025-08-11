@@ -1,10 +1,10 @@
 import uuid
 import enum
 from sqlalchemy import Boolean, Column, String, DateTime, Enum, Integer, Text, Float, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID, JSON
+from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-from app.core.database import Base
+from app.database import Base
 
 
 class JobStatus(str, enum.Enum):
@@ -17,10 +17,10 @@ class JobStatus(str, enum.Enum):
 class ProcessingJob(Base):
     __tablename__ = "processing_jobs"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    document_id = Column(UUID(as_uuid=True), ForeignKey("documents.id"), nullable=False)
-    ai_model_id = Column(UUID(as_uuid=True), ForeignKey("ai_models.id"), nullable=False)
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), index=True)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    document_id = Column(String, ForeignKey("documents.id"), nullable=False)
+    ai_model_id = Column(String, ForeignKey("ai_models.id"), nullable=False)
     status = Column(Enum(JobStatus), default=JobStatus.QUEUED)
     input_data = Column(JSON)
     result_data = Column(JSON)

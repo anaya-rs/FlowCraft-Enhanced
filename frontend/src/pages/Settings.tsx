@@ -1,199 +1,414 @@
-import Layout from "@/components/Layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { useState } from "react";
-import { Settings as SettingsIcon, User, Folder, Database, Save, FolderOpen } from "lucide-react";
+import { useState } from 'react'
+import { motion } from 'framer-motion'
+import { 
+  User, 
+  Shield, 
+  Bell, 
+  Palette, 
+  Database, 
+  Zap, 
+  Save,
+  Eye,
+  EyeOff,
+  CheckCircle,
+  AlertCircle
+} from 'lucide-react'
+import { useAuth } from '../hooks/useAuth'
 
-const Settings = () => {
-  const [sourceFolder, setSourceFolder] = useState("");
-  const [destinationFolder, setDestinationFolder] = useState("");
-  const [apiKey, setApiKey] = useState("");
-  const [autoProcess, setAutoProcess] = useState(true);
-  const [firstName, setFirstName] = useState("John");
-  const [lastName, setLastName] = useState("Doe");
-  const [email, setEmail] = useState("john@example.com");
+export default function Settings() {
+  const { user } = useAuth()
+  const [activeTab, setActiveTab] = useState('profile')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
-  const handleSelectFolder = async (type: 'source' | 'destination') => {
-    try {
-      if ('showDirectoryPicker' in window) {
-        const dirHandle = await (window as any).showDirectoryPicker();
-        const folderPath = dirHandle.name;
-        
-        if (type === 'source') {
-          setSourceFolder(folderPath);
-        } else {
-          setDestinationFolder(folderPath);
-        }
-      } else {
-        alert('Folder selection not supported. Please enter path manually.');
-      }
-    } catch (error) {
-      console.log('User cancelled folder selection');
-    }
-  };
+  const tabs = [
+    { id: 'profile', name: 'Profile', icon: User },
+    { id: 'security', name: 'Security', icon: Shield },
+    { id: 'notifications', name: 'Notifications', icon: Bell },
+    { id: 'appearance', name: 'Appearance', icon: Palette },
+    { id: 'ai', name: 'AI Settings', icon: Zap },
+    { id: 'data', name: 'Data & Storage', icon: Database }
+  ]
 
-  const handleSaveSettings = () => {
-    const settings = {
-      sourceFolder,
-      destinationFolder,
-      apiKey,
-      autoProcess,
-      profile: { firstName, lastName, email },
-      savedAt: new Date().toISOString()
-    };
-    
-    localStorage.setItem('app_settings', JSON.stringify(settings));
-    alert('Settings saved successfully!');
-  };
+  const [profileData, setProfileData] = useState({
+    firstName: user?.first_name || '',
+    lastName: user?.last_name || '',
+    email: user?.email || '',
+    company: 'FlowCraft Inc.',
+    role: 'Document Analyst'
+  })
+
+  const [securityData, setSecurityData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+    twoFactorEnabled: false,
+    sessionTimeout: 30
+  })
+
+  const [aiSettings, setAiSettings] = useState({
+    defaultModel: 'phi3',
+    autoProcess: true,
+    confidenceThreshold: 0.8,
+    maxProcessingTime: 300,
+    enableBatchProcessing: true
+  })
+
+  const handleSaveProfile = () => {
+    // Save profile data
+    console.log('Saving profile:', profileData)
+  }
+
+  const handleSaveSecurity = () => {
+    // Save security settings
+    console.log('Saving security:', securityData)
+  }
+
+  const handleSaveAI = () => {
+    // Save AI settings
+    console.log('Saving AI settings:', aiSettings)
+  }
 
   return (
-    <Layout>
-      <div className="p-8 max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Settings</h1>
-          <p className="text-gray-300">Configure your FlowCraft AI preferences</p>
-        </div>
+    <div className="p-8 space-y-6">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="text-center"
+      >
+        <h1 className="text-3xl font-bold text-white mb-2">Settings</h1>
+        <p className="text-gray-400">
+          Manage your account preferences and FlowCraft AI configuration
+        </p>
+      </motion.div>
 
-        <div className="space-y-6">
-          <Card className="glass-card-dark border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
-                <User className="h-5 w-5" />
-                Profile Settings
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="firstName" className="text-white">First Name</Label>
-                  <Input
-                    id="firstName"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    className="mt-2 bg-input border-border text-white"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="lastName" className="text-white">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    className="mt-2 bg-input border-border text-white"
-                  />
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="email" className="text-white">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="mt-2 bg-input border-border text-white"
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card-dark border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
-                <Folder className="h-5 w-5" />
-                Folder Configuration
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="sourceFolder" className="text-white">Source Folder</Label>
-                <div className="flex gap-2 mt-2">
-                  <Input
-                    id="sourceFolder"
-                    value={sourceFolder}
-                    onChange={(e) => setSourceFolder(e.target.value)}
-                    placeholder="Select or enter source folder path"
-                    className="bg-input border-border text-white"
-                  />
-                  <Button
-                    onClick={() => handleSelectFolder('source')}
-                    variant="outline"
-                    className="border-primary text-primary hover:bg-primary hover:text-white"
-                  >
-                    <FolderOpen className="h-4 w-4 mr-2" />
-                    Browse
-                  </Button>
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="destinationFolder" className="text-white">Destination Folder</Label>
-                <div className="flex gap-2 mt-2">
-                  <Input
-                    id="destinationFolder"
-                    value={destinationFolder}
-                    onChange={(e) => setDestinationFolder(e.target.value)}
-                    placeholder="Select or enter destination folder path"
-                    className="bg-input border-border text-white"
-                  />
-                  <Button
-                    onClick={() => handleSelectFolder('destination')}
-                    variant="outline"
-                    className="border-primary text-primary hover:bg-primary hover:text-white"
-                  >
-                    <FolderOpen className="h-4 w-4 mr-2" />
-                    Browse
-                  </Button>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                <div>
-                  <Label className="text-white">Auto-process new files</Label>
-                  <p className="text-xs text-gray-400">Automatically process files added to source folder</p>
-                </div>
-                <Switch checked={autoProcess} onCheckedChange={setAutoProcess} />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card-dark border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
-                <Database className="h-5 w-5" />
-                API Configuration
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div>
-                <Label htmlFor="apiKey" className="text-white">OpenAI API Key</Label>
-                <Input
-                  id="apiKey"
-                  type="password"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder="sk-..."
-                  className="mt-2 bg-input border-border text-white"
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="flex justify-end">
-            <Button
-              onClick={handleSaveSettings}
-              className="gradient-orange hover:gradient-orange-hover text-white"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              Save Settings
-            </Button>
+      {/* Settings Layout */}
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Sidebar */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="lg:w-64"
+        >
+          <div className="glass-card-dark p-4">
+            <nav className="space-y-2">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 ${
+                    activeTab === tab.id
+                      ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30'
+                      : 'text-gray-400 hover:text-white hover:bg-glass-white/10'
+                  }`}
+                >
+                  <tab.icon className="w-5 h-5" />
+                  <span className="font-medium">{tab.name}</span>
+                </button>
+              ))}
+            </nav>
           </div>
-        </div>
-      </div>
-    </Layout>
-  );
-};
+        </motion.div>
 
-export default Settings;
+        {/* Main Content */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="flex-1"
+        >
+          {/* Profile Tab */}
+          {activeTab === 'profile' && (
+            <div className="glass-card-dark p-6">
+              <h2 className="text-xl font-semibold text-white mb-6 flex items-center space-x-2">
+                <User className="w-5 h-5" />
+                <span>Profile Information</span>
+              </h2>
+              
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      First Name
+                    </label>
+                    <input
+                      type="text"
+                      value={profileData.firstName}
+                      onChange={(e) => setProfileData(prev => ({ ...prev, firstName: e.target.value }))}
+                      className="glass-input w-full"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Last Name
+                    </label>
+                    <input
+                      type="text"
+                      value={profileData.lastName}
+                      onChange={(e) => setProfileData(prev => ({ ...prev, lastName: e.target.value }))}
+                      className="glass-input w-full"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    value={profileData.email}
+                    disabled
+                    className="glass-input w-full bg-glass-dark/50 cursor-not-allowed"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Company
+                    </label>
+                    <input
+                      type="text"
+                      value={profileData.company}
+                      onChange={(e) => setProfileData(prev => ({ ...prev, company: e.target.value }))}
+                      className="glass-input w-full"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Role
+                    </label>
+                    <input
+                      type="text"
+                      value={profileData.role}
+                      onChange={(e) => setProfileData(prev => ({ ...prev, role: e.target.value }))}
+                      className="glass-input w-full"
+                    />
+                  </div>
+                </div>
+                
+                <div className="pt-4 border-t border-glass-border">
+                  <button
+                    onClick={handleSaveProfile}
+                    className="glass-button flex items-center space-x-2"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>Save Changes</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Security Tab */}
+          {activeTab === 'security' && (
+            <div className="glass-card-dark p-6">
+              <h2 className="text-xl font-semibold text-white mb-6 flex items-center space-x-2">
+                <Shield className="w-5 h-5" />
+                <span>Security Settings</span>
+              </h2>
+              
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Current Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={securityData.currentPassword}
+                      onChange={(e) => setSecurityData(prev => ({ ...prev, currentPassword: e.target.value }))}
+                      className="glass-input w-full pr-10"
+                    />
+                    <button
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      New Password
+                    </label>
+                    <input
+                      type="password"
+                      value={securityData.newPassword}
+                      onChange={(e) => setSecurityData(prev => ({ ...prev, newPassword: e.target.value }))}
+                      className="glass-input w-full"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Confirm New Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        value={securityData.confirmPassword}
+                        onChange={(e) => setSecurityData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                        className="glass-input w-full pr-10"
+                      />
+                      <button
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                      >
+                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between p-4 bg-glass-white/5 rounded-lg">
+                  <div>
+                    <h3 className="font-medium text-white">Two-Factor Authentication</h3>
+                    <p className="text-sm text-gray-400">Add an extra layer of security to your account</p>
+                  </div>
+                  <button
+                    onClick={() => setSecurityData(prev => ({ ...prev, twoFactorEnabled: !prev.twoFactorEnabled }))}
+                    className={`px-4 py-2 rounded-lg transition-colors ${
+                      securityData.twoFactorEnabled
+                        ? 'bg-green-500/20 text-green-400'
+                        : 'bg-gray-500/20 text-gray-400'
+                    }`}
+                  >
+                    {securityData.twoFactorEnabled ? 'Enabled' : 'Disabled'}
+                  </button>
+                </div>
+                
+                <div className="pt-4 border-t border-glass-border">
+                  <button
+                    onClick={handleSaveSecurity}
+                    className="glass-button flex items-center space-x-2"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>Update Security</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* AI Settings Tab */}
+          {activeTab === 'ai' && (
+            <div className="glass-card-dark p-6">
+              <h2 className="text-xl font-semibold text-white mb-6 flex items-center space-x-2">
+                <Zap className="w-5 h-5" />
+                <span>AI Processing Settings</span>
+              </h2>
+              
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Default AI Model
+                  </label>
+                  <select
+                    value={aiSettings.defaultModel}
+                    onChange={(e) => setAiSettings(prev => ({ ...prev, defaultModel: e.target.value }))}
+                    className="glass-select w-full"
+                  >
+                    <option value="phi3">Phi-3 (Default)</option>
+                    <option value="phi2">Phi-2</option>
+                    <option value="custom">Custom Model</option>
+                  </select>
+                </div>
+                
+                <div className="flex items-center justify-between p-4 bg-glass-white/5 rounded-lg">
+                  <div>
+                    <h3 className="font-medium text-white">Auto-Process Documents</h3>
+                    <p className="text-sm text-gray-400">Automatically process documents when uploaded</p>
+                  </div>
+                  <button
+                    onClick={() => setAiSettings(prev => ({ ...prev, autoProcess: !prev.autoProcess }))}
+                    className={`px-4 py-2 rounded-lg transition-colors ${
+                      aiSettings.autoProcess
+                        ? 'bg-green-500/20 text-green-400'
+                        : 'bg-gray-500/20 text-gray-400'
+                    }`}
+                  >
+                    {aiSettings.autoProcess ? 'Enabled' : 'Disabled'}
+                  </button>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Confidence Threshold
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={aiSettings.confidenceThreshold}
+                      onChange={(e) => setAiSettings(prev => ({ ...prev, confidenceThreshold: parseFloat(e.target.value) }))}
+                      className="flex-1"
+                    />
+                    <span className="text-white font-medium">
+                      {Math.round(aiSettings.confidenceThreshold * 100)}%
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Only show results above this confidence level
+                  </p>
+                </div>
+                
+                <div className="pt-4 border-t border-glass-border">
+                  <button
+                    onClick={handleSaveAI}
+                    className="glass-button flex items-center space-x-2"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>Save AI Settings</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Other tabs can be implemented similarly */}
+          {activeTab === 'notifications' && (
+            <div className="glass-card-dark p-6">
+              <h2 className="text-xl font-semibold text-white mb-6 flex items-center space-x-2">
+                <Bell className="w-5 h-5" />
+                <span>Notification Preferences</span>
+              </h2>
+              <p className="text-gray-400">Notification settings coming soon...</p>
+            </div>
+          )}
+
+          {activeTab === 'appearance' && (
+            <div className="glass-card-dark p-6">
+              <h2 className="text-xl font-semibold text-white mb-6 flex items-center space-x-2">
+                <Palette className="w-5 h-5" />
+                <span>Appearance Settings</span>
+              </h2>
+              <p className="text-gray-400">Appearance customization coming soon...</p>
+            </div>
+          )}
+
+          {activeTab === 'data' && (
+            <div className="glass-card-dark p-6">
+              <h2 className="text-xl font-semibold text-white mb-6 flex items-center space-x-2">
+                <Database className="w-5 h-5" />
+                <span>Data & Storage</span>
+              </h2>
+              <p className="text-gray-400">Data management settings coming soon...</p>
+            </div>
+          )}
+        </motion.div>
+      </div>
+    </div>
+  )
+}

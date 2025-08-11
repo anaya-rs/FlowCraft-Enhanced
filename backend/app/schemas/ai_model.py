@@ -1,56 +1,52 @@
-from typing import Optional, Dict, Any
 from pydantic import BaseModel, Field
+from typing import List, Optional
 from datetime import datetime
-from app.models.ai_model import ModelType, ResponseFormat
-
 
 class AIModelBase(BaseModel):
-    name: str = Field(..., min_length=1, max_length=100)
-    description: Optional[str] = Field(None, max_length=500)
-    model_type: ModelType
-    prompt_template: str = Field(..., min_length=1)
-    temperature: float = Field(default=0.7, ge=0.0, le=1.0)
-    max_tokens: int = Field(default=1000, ge=1, le=4000)
-    response_format: ResponseFormat = ResponseFormat.TEXT
-
+    name: str = Field(..., description="Model name")
+    description: Optional[str] = Field(None, description="Model description")
+    model_type: str = Field(..., description="Model type (classifier, extractor, summarizer)")
+    prompt_template: str = Field(..., description="Prompt template for the model")
+    temperature: float = Field(0.7, ge=0.0, le=2.0, description="Model temperature")
+    max_tokens: int = Field(1000, ge=1, le=4000, description="Maximum tokens for response")
 
 class AIModelCreate(AIModelBase):
     pass
 
-
 class AIModelUpdate(BaseModel):
-    name: Optional[str] = Field(None, min_length=1, max_length=100)
-    description: Optional[str] = Field(None, max_length=500)
-    prompt_template: Optional[str] = Field(None, min_length=1)
-    temperature: Optional[float] = Field(None, ge=0.0, le=1.0)
-    max_tokens: Optional[int] = Field(None, ge=1, le=4000)
-    response_format: Optional[ResponseFormat] = None
-    is_active: Optional[bool] = None
+    name: Optional[str] = Field(None, description="Model name")
+    description: Optional[str] = Field(None, description="Model description")
+    model_type: Optional[str] = Field(None, description="Model type")
+    prompt_template: Optional[str] = Field(None, description="Prompt template")
+    temperature: Optional[float] = Field(None, ge=0.0, le=2.0, description="Model temperature")
+    max_tokens: Optional[int] = Field(None, ge=1, le=4000, description="Maximum tokens")
+    is_active: Optional[bool] = Field(None, description="Model active status")
 
+class AIModelResponse(AIModelBase):
+    id: str = Field(..., description="Model ID")
+    is_active: bool = Field(..., description="Model active status")
+    usage_count: int = Field(..., description="Number of times model was used")
+    created_at: datetime = Field(..., description="Creation timestamp")
+    updated_at: datetime = Field(..., description="Last update timestamp")
 
-class AIModelPublic(AIModelBase):
-    id: str
-    user_id: str
-    is_active: bool
-    is_draft: bool
-    usage_count: int
-    created_at: datetime
-    updated_at: Optional[datetime]
-    
-    class Config:
-        from_attributes = True
+class AIModelListResponse(BaseModel):
+    models: List[AIModelResponse] = Field(..., description="List of AI models")
+    total: int = Field(..., description="Total number of models")
+    skip: int = Field(..., description="Pagination offset")
+    limit: int = Field(..., description="Pagination limit")
 
+class AIModelTemplate(BaseModel):
+    name: str = Field(..., description="Template name")
+    description: str = Field(..., description="Template description")
+    prompt_template: str = Field(..., description="Default prompt template")
+    temperature: float = Field(..., description="Default temperature")
+    max_tokens: int = Field(..., description="Default max tokens")
 
-class AIModelDuplicate(BaseModel):
-    name: str = Field(..., min_length=1, max_length=100)
-    description: Optional[str] = Field(None, max_length=500)
-
-
-class ModelTemplate(BaseModel):
-    name: str
-    description: str
-    model_type: ModelType
-    prompt_template: str
-    temperature: float
-    max_tokens: int
-    response_format: ResponseFormat
+class AIModelUsage(BaseModel):
+    model_id: str = Field(..., description="Model ID")
+    document_id: str = Field(..., description="Document ID")
+    input_tokens: int = Field(..., description="Input tokens used")
+    output_tokens: int = Field(..., description="Output tokens generated")
+    processing_time: float = Field(..., description="Processing time in seconds")
+    success: bool = Field(..., description="Processing success status")
+    timestamp: datetime = Field(..., description="Usage timestamp")

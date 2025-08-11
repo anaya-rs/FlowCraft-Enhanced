@@ -1,270 +1,453 @@
-import Layout from "@/components/Layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { 
-  FileText, 
   Upload, 
   Search, 
-  Download, 
-  Eye, 
+  Filter, 
+  Grid, 
+  List, 
+  FileText, 
+  Image, 
+  File,
+  MoreVertical,
+  Eye,
+  Download,
   Trash2,
+  RefreshCw,
+  Tag,
   Calendar,
-  FileImage,
-  File
-} from "lucide-react";
+  Settings,
+  ExternalLink
+} from 'lucide-react'
+import DocumentUpload from '../components/DocumentUpload'
+import DocumentList from '../components/DocumentList'
 
-const Documents = () => {
-  const navigate = useNavigate();
-  const [documents, setDocuments] = useState<any[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
+interface Document {
+  id: string
+  filename: string
+  originalFilename: string
+  fileSize: number
+  mimeType: string
+  processingStatus: string
+  documentType: string
+  ocrConfidence: number | null
+  createdAt: string
+  processedAt: string | null
+  tags: string[]
+  keyValuePairs: Record<string, string>
+  aiSummary?: string
+  keyInsights?: Array<{
+    label: string
+    value: string
+    confidence: number
+    type: 'text' | 'number' | 'date' | 'currency' | 'id'
+  }>
+  isHandwritten?: boolean
+  handwrittenConfidence?: number
+}
 
-  const loadDocuments = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch("http://localhost:8000/documents", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
-        },
-      });
-      if (response.ok) {
-        const docs = await response.json();
-        setDocuments(docs);
-      }
-    } catch (error) {
-      console.error("Failed to load documents:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+export default function Documents() {
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showFilters, setShowFilters] = useState(false)
+  const [selectedFilter, setSelectedFilter] = useState('all')
+  const [showExportConfig, setShowExportConfig] = useState(false)
+  const [documents, setDocuments] = useState<Document[]>([])
+  const [isLoading, setIsLoading] = useState(false)
 
+  // Load initial documents from localStorage or use mock data
   useEffect(() => {
-    loadDocuments();
-  }, []);
-
-  const handleUpload = async () => {
-    if (!selectedFile) return;
-    setIsUploading(true);
-
-    const formData = new FormData();
-    formData.append("file", selectedFile);
-
-    try {
-      const response = await fetch("http://localhost:8000/upload", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
-        },
-        body: formData,
-      });
-
-      if (response.ok) {
-        await loadDocuments();
-        setSelectedFile(null);
-        alert("File uploaded successfully!");
-      } else {
-        throw new Error("Upload failed");
-      }
-    } catch (error) {
-      console.error("Upload error:", error);
-      alert("Upload failed. Please try again.");
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  // ===== UPDATED FUNCTIONS FOR ICON ACTIONS =====
-  const handleViewDocument = (doc: any) => {
-    navigate(`/documents/view/${doc.id}`);
-  };
-
-  const handleDownloadDocument = async (doc: any) => {
-    try {
-      const response = await fetch(`http://localhost:8000/documents/${doc.id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
-        },
-      });
-      
-      if (response.ok) {
-        const docData = await response.json();
-        const blob = new Blob([docData.extracted_text || "No text extracted"], { type: 'text/plain' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${doc.original_filename}_extracted.txt`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      } else {
-        alert("Failed to download document");
-      }
-    } catch (error) {
-      console.error("Download error:", error);
-      alert("Download failed");
-    }
-  };
-
-  const handleDeleteDocument = async (doc: any) => {
-    if (confirm(`Are you sure you want to delete "${doc.original_filename}"?`)) {
+    const savedDocuments = localStorage.getItem('flowcraft_documents')
+    if (savedDocuments) {
       try {
-        const updatedDocs = documents.filter(d => d.id !== doc.id);
-        setDocuments(updatedDocs);
-        alert("Document deleted successfully!");
+        setDocuments(JSON.parse(savedDocuments))
       } catch (error) {
-        console.error("Delete error:", error);
-        alert("Delete failed");
+        console.error('Error loading saved documents:', error)
+        setDocuments(getInitialMockDocuments())
       }
+    } else {
+      setDocuments(getInitialMockDocuments())
     }
-  };
+  }, [])
 
-  const getFileIcon = (mimeType: string) => {
-    if (mimeType?.startsWith('image/')) return FileImage;
-    if (mimeType?.includes('pdf')) return FileText;
-    return File;
-  };
+  // Save documents to localStorage whenever they change
+  useEffect(() => {
+    if (documents.length > 0) {
+      localStorage.setItem('flowcraft_documents', JSON.stringify(documents))
+    }
+  }, [documents])
 
-  const filteredDocuments = documents.filter(doc =>
-    doc.original_filename?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const getInitialMockDocuments = (): Document[] => [
+    {
+      id: '1',
+      filename: 'Invoice_2024_001.pdf',
+      originalFilename: 'Invoice_2024_001.pdf',
+      fileSize: 2457600,
+      mimeType: 'application/pdf',
+      processingStatus: 'completed',
+      documentType: 'invoice',
+      ocrConfidence: 0.94,
+      createdAt: '2024-01-15T10:30:00Z',
+      processedAt: '2024-01-15T10:32:00Z',
+      tags: ['finance', 'invoice', '2024'],
+      keyValuePairs: {
+        'Invoice Number': 'INV-2024-001',
+        'Amount': '$1,250.00',
+        'Date': '2024-01-15',
+        'Vendor': 'TechCorp Inc.'
+      },
+      aiSummary: 'Professional invoice from TechCorp Inc. for software licensing services totaling $1,250.00, due within 30 days.',
+      keyInsights: [
+        { label: 'Invoice Number', value: 'INV-2024-001', confidence: 0.98, type: 'id' },
+        { label: 'Total Amount', value: '$1,250.00', confidence: 0.95, type: 'currency' },
+        { label: 'Due Date', value: '2024-02-14', confidence: 0.92, type: 'date' },
+        { label: 'Vendor Name', value: 'TechCorp Inc.', confidence: 0.89, type: 'text' }
+      ],
+      isHandwritten: false,
+      handwrittenConfidence: 0.02
+    },
+    {
+      id: '2',
+      filename: 'Contract_Agreement.pdf',
+      originalFilename: 'Contract_Agreement.pdf',
+      fileSize: 3145728,
+      mimeType: 'application/pdf',
+      processingStatus: 'processing',
+      documentType: 'contract',
+      ocrConfidence: null,
+      createdAt: '2024-01-15T11:00:00Z',
+      processedAt: null,
+      tags: ['legal', 'contract'],
+      keyValuePairs: {},
+      aiSummary: 'Legal contract document currently being processed. Contains multiple pages with mixed printed and handwritten content.',
+      keyInsights: [],
+      isHandwritten: true,
+      handwrittenConfidence: 0.78
+    },
+    {
+      id: '3',
+      filename: 'Financial_Report.jpg',
+      originalFilename: 'Financial_Report.jpg',
+      fileSize: 1572864,
+      mimeType: 'image/jpeg',
+      processingStatus: 'completed',
+      documentType: 'report',
+      ocrConfidence: 0.89,
+      createdAt: '2024-01-14T15:45:00Z',
+      processedAt: '2024-01-14T15:47:00Z',
+      tags: ['finance', 'report', '2024'],
+      keyValuePairs: {
+        'Report Type': 'Financial Summary',
+        'Period': 'Q4 2023',
+        'Total Revenue': '$45,250.00'
+      },
+      aiSummary: 'Q4 2023 financial summary report showing strong revenue growth with total revenue of $45,250.00 and positive quarterly performance.',
+      keyInsights: [
+        { label: 'Report Period', value: 'Q4 2023', confidence: 0.96, type: 'text' },
+        { label: 'Total Revenue', value: '$45,250.00', confidence: 0.93, type: 'currency' },
+        { label: 'Growth Rate', value: '+12.5%', confidence: 0.87, type: 'number' },
+        { label: 'Report Date', value: '2024-01-14', confidence: 0.91, type: 'date' }
+      ],
+      isHandwritten: false,
+      handwrittenConfidence: 0.05
+    }
+  ]
+
+  const handleDocumentUploaded = (newDocument: Document) => {
+    setDocuments(prev => [newDocument, ...prev])
+  }
+
+  const handleUploadComplete = () => {
+    // Refresh the documents list
+    console.log('Upload complete, documents refreshed')
+  }
+
+  const handleDeleteDocument = (documentId: string) => {
+    setDocuments(prev => prev.filter(doc => doc.id !== documentId))
+  }
+
+  const handleDownloadDocument = (document: Document) => {
+    // Create a mock download
+    const blob = new Blob([`Document: ${document.originalFilename}\n\nAI Summary: ${document.aiSummary || 'No summary available'}\n\nKey Insights: ${JSON.stringify(document.keyInsights || [], null, 2)}`], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = window.document.createElement('a')
+    a.href = url
+    a.download = `${document.originalFilename.replace(/\.[^/.]+$/, '')}_processed.txt`
+    window.document.body.appendChild(a)
+    a.click()
+    window.document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  const filters = [
+    { id: 'all', name: 'All Documents', count: documents.length },
+    { id: 'completed', name: 'Completed', count: documents.filter(d => d.processingStatus === 'completed').length },
+    { id: 'processing', name: 'Processing', count: documents.filter(d => d.processingStatus === 'processing').length },
+    { id: 'invoice', name: 'Invoices', count: documents.filter(d => d.documentType === 'invoice').length },
+    { id: 'contract', name: 'Contracts', count: documents.filter(d => d.documentType === 'contract').length },
+    { id: 'report', name: 'Reports', count: documents.filter(d => d.documentType === 'report').length }
+  ]
+
+  const filteredDocuments = documents.filter(doc => {
+    const matchesSearch = doc.filename.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         doc.originalFilename.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         (doc.aiSummary && doc.aiSummary.toLowerCase().includes(searchQuery.toLowerCase()))
+    const matchesFilter = selectedFilter === 'all' || 
+                         (selectedFilter === 'completed' && doc.processingStatus === 'completed') ||
+                         (selectedFilter === 'processing' && doc.processingStatus === 'processing') ||
+                         doc.documentType === selectedFilter
+    
+    return matchesSearch && matchesFilter
+  })
 
   return (
-    <Layout>
-      <div className="p-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Documents</h1>
-            <p className="text-gray-300">Manage your uploaded documents and extracted content</p>
-          </div>
+    <div className="p-8 space-y-6">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+      >
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">Documents</h1>
+          <p className="text-gray-400">
+            Manage and analyze your documents with AI-powered intelligence
+          </p>
         </div>
+        
+        <div className="flex items-center space-x-3">
+          {/* Export Configuration Button */}
+          <button
+            onClick={() => setShowExportConfig(!showExportConfig)}
+            className="glass-button-primary px-4 py-2 flex items-center space-x-2"
+          >
+            <Settings className="w-4 h-4" />
+            <span>Export Config</span>
+          </button>
+          
+          <button
+            onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+            className="glass-button-outline px-4 py-2 flex items-center space-x-2"
+          >
+            {viewMode === 'grid' ? <List className="w-4 h-4" /> : <Grid className="w-4 h-4" />}
+            <span>{viewMode === 'grid' ? 'List' : 'Grid'}</span>
+          </button>
+          
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-200 ${
+              showFilters 
+                ? 'bg-primary-500 text-white' 
+                : 'glass-button-outline'
+            }`}
+          >
+            <Filter className="w-4 h-4" />
+            <span>Filters</span>
+          </button>
+        </div>
+      </motion.div>
 
-        {/* Upload Section */}
-        <Card className="glass-card-dark border-border mb-8">
-          <CardHeader>
-            <CardTitle className="text-white">Quick Upload</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-4 items-end">
-              <div className="flex-1">
-                <input
-                  type="file"
-                  accept=".pdf,.png,.jpg,.jpeg"
-                  onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-primary file:text-white hover:file:bg-primary/80"
-                />
-              </div>
-              <Button
-                onClick={handleUpload}
-                disabled={!selectedFile || isUploading}
-                className="gradient-orange hover:gradient-orange-hover text-white"
-              >
-                {isUploading ? "Uploading..." : "Upload"}
-              </Button>
+      {/* Export Configuration Panel */}
+      {showExportConfig && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          className="glass-card-dark p-6"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-white">Export Configuration</h2>
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-sm text-green-400">Active</span>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Export Format */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Export Format</label>
+              <select className="glass-input w-full">
+                <option value="json">JSON</option>
+                <option value="csv">CSV</option>
+                <option value="txt">TXT</option>
+                <option value="pdf">PDF</option>
+              </select>
+            </div>
+            
+            {/* Destination Folder */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Destination Folder</label>
+              <div className="flex items-center space-x-2">
+                <input 
+                  type="text" 
+                  placeholder="/exports/documents" 
+                  className="glass-input flex-1"
+                  defaultValue="/exports/documents"
+                />
+                <button className="glass-button-outline px-3 py-2">
+                  <ExternalLink className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+            
+            {/* API Export Path */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">API Export Path</label>
+              <input 
+                type="text" 
+                placeholder="https://api.example.com/webhook" 
+                className="glass-input w-full"
+              />
+            </div>
+            
+            {/* Webhook Authentication */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">API Key</label>
+              <input 
+                type="password" 
+                placeholder="Enter API key" 
+                className="glass-input w-full"
+              />
+            </div>
+            
+            {/* Auto Export */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Auto Export</label>
+              <div className="flex items-center space-x-3">
+                <label className="flex items-center">
+                  <input type="checkbox" className="mr-2" defaultChecked />
+                  <span className="text-sm text-gray-300">Enable automatic export</span>
+                </label>
+              </div>
+            </div>
+            
+            {/* Export Status */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Status</label>
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span className="text-sm text-green-400">Ready for export</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-end space-x-3 mt-6 pt-4 border-t border-glass-border">
+            <button className="glass-button-outline px-4 py-2">Test Connection</button>
+            <button className="glass-button-primary px-4 py-2">Save Configuration</button>
+          </div>
+        </motion.div>
+      )}
 
-        {/* Search */}
-        <div className="mb-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
+      {/* Upload Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.1 }}
+      >
+        <DocumentUpload 
+          onDocumentUploaded={handleDocumentUploaded}
+          onUploadComplete={handleUploadComplete}
+        />
+      </motion.div>
+
+      {/* Search and Filters */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+        className="glass-card-dark p-6"
+      >
+        {/* Search Bar */}
+        <div className="flex items-center space-x-4 mb-6">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
               placeholder="Search documents..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-white/5 border-white/10 text-white"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="glass-input w-full pl-10"
             />
           </div>
+          
+          <div className="text-sm text-gray-400">
+            {filteredDocuments.length} of {documents.length} documents
+          </div>
         </div>
 
-        {/* Documents List */}
-        {isLoading ? (
-          <div className="text-center py-12">
-            <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-gray-400">Loading documents...</p>
-          </div>
-        ) : filteredDocuments.length === 0 ? (
-          <Card className="glass-card-dark border-border">
-            <CardContent className="p-12 text-center">
-              <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-white mb-2">No Documents Found</h3>
-              <p className="text-gray-400">Upload your first document to get started</p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredDocuments.map((doc) => {
-              const FileIcon = getFileIcon(doc.mime_type);
-              return (
-                <Card key={doc.id} className="glass-card-dark border-border">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div className="w-10 h-10 gradient-orange rounded-lg flex items-center justify-center">
-                        <FileIcon className="h-6 w-6 text-white" />
-                      </div>
-                      <div className="flex gap-2">
-                        <Button 
-                          onClick={() => handleViewDocument(doc)}
-                          variant="ghost" 
-                          size="sm" 
-                          className="text-blue-400 hover:text-blue-300 hover:bg-blue-400/10"
-                          title="View document details"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          onClick={() => handleDownloadDocument(doc)}
-                          variant="ghost" 
-                          size="sm" 
-                          className="text-green-400 hover:text-green-300 hover:bg-green-400/10"
-                          title="Download extracted text"
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          onClick={() => handleDeleteDocument(doc)}
-                          variant="ghost" 
-                          size="sm" 
-                          className="text-red-400 hover:text-red-300 hover:bg-red-400/10"
-                          title="Delete document"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    <CardTitle className="text-white text-sm truncate">{doc.original_filename}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2 text-xs text-gray-500 mb-4">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(doc.created_at).toLocaleDateString()}
-                      </div>
-                      <div>Size: {(doc.file_size / 1024 / 1024).toFixed(2)} MB</div>
-                    </div>
-                    {doc.extracted_text && (
-                      <div className="p-3 bg-gray-800/50 rounded-lg">
-                        <p className="text-xs text-gray-400 mb-1">Extracted Text:</p>
-                        <p className="text-xs text-gray-300">
-                          {doc.extracted_text.substring(0, 100)}...
-                        </p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+        {/* Filter Chips */}
+        {showFilters && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="space-y-3"
+          >
+            <h3 className="text-sm font-medium text-gray-300">Filter by:</h3>
+            <div className="flex flex-wrap gap-2">
+              {filters.map((filter) => (
+                <button
+                  key={filter.id}
+                  onClick={() => setSelectedFilter(filter.id)}
+                  className={`filter-chip ${
+                    selectedFilter === filter.id ? 'filter-chip-active' : ''
+                  }`}
+                >
+                  {filter.name}
+                  <span className="ml-2 px-2 py-0.5 bg-glass-white/20 rounded-full text-xs">
+                    {filter.count}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </motion.div>
         )}
-      </div>
-    </Layout>
-  );
-};
+      </motion.div>
 
-export default Documents;
+      {/* Documents List */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+      >
+        <DocumentList 
+          documents={filteredDocuments} 
+          viewMode={viewMode}
+          onRefresh={() => {
+            // Refresh documents
+            console.log('Refreshing documents...')
+          }}
+        />
+      </motion.div>
+
+      {/* Empty State */}
+      {filteredDocuments.length === 0 && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="glass-card-dark p-12 text-center"
+        >
+          <div className="w-20 h-20 bg-glass-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <FileText className="w-10 h-10 text-gray-400" />
+          </div>
+          <h3 className="text-xl font-semibold text-white mb-2">No documents found</h3>
+          <p className="text-gray-400 mb-6">
+            {searchQuery || selectedFilter !== 'all' 
+              ? 'Try adjusting your search or filters'
+              : 'Upload your first document to get started'
+            }
+          </p>
+          {!searchQuery && selectedFilter === 'all' && (
+            <button className="glass-button">
+              <Upload className="w-4 h-4 mr-2" />
+              Upload Document
+            </button>
+          )}
+        </motion.div>
+      )}
+    </div>
+  )
+}

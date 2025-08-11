@@ -1,10 +1,9 @@
 import uuid
 import enum
 from sqlalchemy import Boolean, Column, String, DateTime, Enum, Integer, Text, Float, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-from app.core.database import Base
+from app.database import Base
 
 
 class ModelType(str, enum.Enum):
@@ -25,8 +24,8 @@ class ResponseFormat(str, enum.Enum):
 class AIModel(Base):
     __tablename__ = "ai_models"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), index=True)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
     name = Column(String, nullable=False)
     description = Column(Text)
     model_type = Column(Enum(ModelType), nullable=False)
