@@ -53,21 +53,18 @@
     --flowcraft-light: #f8f9fa;
   }
 
-  * {
-    background-color: #111827 !important; /* bg-gray-900 */
-  }
-
+  /* Base HTML Elements - Prevent white flash */
   html {
     scroll-behavior: smooth;
     font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-    background-color: #111827 !important; /* bg-gray-900 */
-    color: #f3f4f6 !important; /* text-gray-100 */
+    background-color: #111827; /* bg-gray-900 */
+    color: #f3f4f6; /* text-gray-100 */
   }
 
   body {
     @apply bg-gray-900 text-gray-100;
-    background-color: #111827 !important; /* bg-gray-900 */
-    color: #f3f4f6 !important; /* text-gray-100 */
+    background-color: #111827; /* bg-gray-900 */
+    color: #f3f4f6; /* text-gray-100 */
     font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
     line-height: 1.6;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
@@ -77,23 +74,8 @@
 
   /* Root element dark background */
   #root {
-    background-color: #111827 !important; /* bg-gray-900 */
+    background-color: #111827; /* bg-gray-900 */
     min-height: 100vh;
-  }
-
-  /* Force all divs to have dark background */
-  div {
-    background-color: #111827 !important; /* bg-gray-900 */
-  }
-
-  /* Force all sections to have dark background */
-  section {
-    background-color: #111827 !important; /* bg-gray-900 */
-  }
-
-  /* Force all main elements to have dark background */
-  main {
-    background-color: #111827 !important; /* bg-gray-900 */
   }
 
   /* Typography - Standardized hierarchy using Poppins font */
