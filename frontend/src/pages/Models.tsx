@@ -274,70 +274,72 @@ export default function Models() {
 
       {/* Main Content */}
       <div className={pageLayout.content.container}>
-        {/* Stats */}
-        <div className={`${pageLayout.grid.cards} ${pageLayout.content.section}`}>
-          <div className={`${pageLayout.content.card} bg-gray-800/50 backdrop-blur-xl border border-gray-700/50`}>
+        {/* Stats - Compact Cards */}
+        <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 ${pageLayout.content.section}`}>
+          <div className="bg-gray-800/50 backdrop-blur-xl border border-gray-700/50 rounded-lg p-4 hover:border-gray-600/50 transition-all duration-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className={`${commonTypography.label} text-gray-400`}>Total Models</p>
+                <p className={`${commonTypography.label} text-gray-400 mb-1`}>Total Models</p>
                 <p className={`${commonTypography.sectionTitle} text-white`}>{models.length}</p>
               </div>
-              <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                <Brain className="w-6 h-6 text-blue-500" />
+              <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                <Brain className="w-5 h-5 text-blue-500" />
               </div>
             </div>
           </div>
 
-          <div className={`${pageLayout.content.card} bg-gray-800/50 backdrop-blur-xl border border-gray-700/50`}>
+          <div className="bg-gray-800/50 backdrop-blur-xl border border-gray-700/50 rounded-lg p-4 hover:border-gray-600/50 transition-all duration-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className={`${commonTypography.label} text-gray-400`}>Active Models</p>
+                <p className={`${commonTypography.label} text-gray-400 mb-1`}>Active Models</p>
                 <p className={`${commonTypography.sectionTitle} text-white`}>
                   {models.filter(m => m.isActive).length}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-green-500" />
+              <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
+                <CheckCircle className="w-5 h-5 text-green-500" />
               </div>
             </div>
           </div>
 
-          <div className={`${pageLayout.content.card} bg-gray-800/50 backdrop-blur-xl border border-gray-700/50`}>
+          <div className="bg-gray-800/50 backdrop-blur-xl border border-gray-700/50 rounded-lg p-4 hover:border-gray-600/50 transition-all duration-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className={`${commonTypography.label} text-gray-400`}>Total Usage</p>
+                <p className={`${commonTypography.label} text-gray-400 mb-1`}>Total Usage</p>
                 <p className={`${commonTypography.sectionTitle} text-white`}>
                   {models.reduce((sum, m) => sum + m.usageCount, 0)}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center">
-                <BarChart3 className="w-6 h-6 text-orange-500" />
+              <div className="w-10 h-10 bg-orange-500/20 rounded-lg flex items-center justify-center">
+                <BarChart3 className="w-5 h-5 text-orange-500" />
               </div>
             </div>
           </div>
 
-          <div className={`${pageLayout.content.card} bg-gray-800/50 backdrop-blur-xl border border-gray-700/50`}>
+          <div className="bg-gray-800/50 backdrop-blur-xl border border-gray-700/50 rounded-lg p-4 hover:border-gray-600/50 transition-all duration-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className={`${commonTypography.label} text-gray-400`}>Latest Update</p>
+                <p className={`${commonTypography.label} text-gray-400 mb-1`}>Latest Update</p>
                 <p className={`${commonTypography.sectionTitle} text-white`}>
                   {formatDate(models[0]?.updatedAt || new Date().toISOString())}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                <Clock className="w-6 h-6 text-purple-500" />
+              <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                <Clock className="w-5 h-5 text-purple-500" />
               </div>
             </div>
           </div>
         </div>
 
         {/* Models Grid */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6"
-        >
+        <div className={pageLayout.content.section}>
+          <h2 className={`${pageLayout.content.sectionTitle} text-white mb-6`}>Your AI Models</h2>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+          >
           {models.map((model, index) => (
             <motion.div
               key={model.id}
@@ -439,29 +441,29 @@ export default function Models() {
             </motion.div>
           ))}
         </motion.div>
-
-        {/* Empty State */}
-        {models.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="bg-gray-800/50 backdrop-blur-xl border border-gray-700/50 rounded-xl p-12 text-center"
-          >
-            <div className="w-20 h-20 bg-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Brain className="w-10 h-10 text-gray-400" />
-            </div>
-            <h3 className="text-xl font-semibold text-white mb-2">No AI models yet</h3>
-            <p className="text-gray-400 mb-6">
-              Create your first custom AI model to start processing documents intelligently
-            </p>
-            <Button className="bg-gray-800/50 backdrop-blur-xl border border-gray-700/50 rounded-xl p-4">
-              <Plus className="w-4 h-4 mr-2" />
-              Create Model
-            </Button>
-          </motion.div>
-        )}
       </div>
+
+      {/* Empty State */}
+      {models.length === 0 && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="bg-gray-800/50 backdrop-blur-xl border border-gray-700/50 rounded-xl p-12 text-center"
+        >
+          <div className="w-20 h-20 bg-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Brain className="w-10 h-10 text-gray-400" />
+          </div>
+          <h3 className="text-xl font-semibold text-white mb-2">No AI models yet</h3>
+          <p className="text-gray-400 mb-6">
+            Create your first custom AI model to start processing documents intelligently
+          </p>
+          <Button className="bg-gray-800/50 backdrop-blur-xl border border-gray-700/50 rounded-xl p-4">
+            <Plus className="w-4 h-4 mr-2" />
+            Create Model
+          </Button>
+        </motion.div>
+      )}
 
       {/* Create Model Modal */}
       <AnimatePresence>
