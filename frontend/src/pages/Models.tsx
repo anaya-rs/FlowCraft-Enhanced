@@ -464,6 +464,7 @@ export default function Models() {
           </Button>
         </motion.div>
       )}
+    </div>
 
       {/* Create Model Modal */}
       <AnimatePresence>
