@@ -53,6 +53,9 @@
     --flowcraft-light: #f8f9fa;
   }
 
+  * {
+    background-color: #111827 !important; /* bg-gray-900 */
+  }
 
   html {
     scroll-behavior: smooth;
@@ -76,6 +79,21 @@
   #root {
     background-color: #111827 !important; /* bg-gray-900 */
     min-height: 100vh;
+  }
+
+  /* Force all divs to have dark background */
+  div {
+    background-color: #111827 !important; /* bg-gray-900 */
+  }
+
+  /* Force all sections to have dark background */
+  section {
+    background-color: #111827 !important; /* bg-gray-900 */
+  }
+
+  /* Force all main elements to have dark background */
+  main {
+    background-color: #111827 !important; /* bg-gray-900 */
   }
 
   /* Typography - Standardized hierarchy using Poppins font */
