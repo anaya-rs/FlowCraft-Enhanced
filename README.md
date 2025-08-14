@@ -25,7 +25,7 @@ python backend/main.py & npm run dev --prefix frontend
 
 - Python 3.9+
 - Node.js 18+
-- Tesseract OCR
+- Tesseract and Easy OCR
 - Ollama (for AI processing)
 
 

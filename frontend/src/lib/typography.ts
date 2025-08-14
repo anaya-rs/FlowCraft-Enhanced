@@ -91,7 +91,7 @@ export const spacingClasses = {
 // Page Layout System - Consistent structure across all pages
 export const pageLayout = {
   // Main page container
-  container: "min-h-screen bg-gray-900",
+  container: "min-h-screen bg-gray-900 text-white",
   
   // Page header section - consistent across all pages
   header: {
@@ -105,7 +105,7 @@ export const pageLayout = {
   
   // Main content area
   content: {
-    container: "max-w-7xl mx-auto p-6 lg:p-8",
+    container: "max-w-7xl mx-auto p-6 lg:p-8 bg-gray-900",
     section: "mb-8 lg:mb-12",
     sectionTitle: "text-2xl lg:text-3xl font-semibold text-white mb-4 lg:mb-6",
     card: "bg-gray-800/80 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 lg:p-8",
